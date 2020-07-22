@@ -1,14 +1,18 @@
 package com.subhipandey.android.drawingapp
 
 import android.app.Dialog
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageButton
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.get
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.dialog_brush_size.*
+import java.util.jar.Manifest
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,6 +35,14 @@ class MainActivity : AppCompatActivity() {
 
         ib_brush.setOnClickListener {
             showBrushSizeChooserDialog()
+        }
+
+        ib_gallery.setOnClickListener {
+            if (isReadStorageAllowed()) {
+
+            } else {
+                requestStoragePermission()
+            }
         }
     }
 
@@ -63,11 +75,68 @@ class MainActivity : AppCompatActivity() {
             val colorTag = imageButton.tag.toString()
             drawing_view.setColor(colorTag)
             imageButton.setImageDrawable(
-                ContextCompat.getDrawable(this,R.drawable.pallet_pressed)
+                ContextCompat.getDrawable(this, R.drawable.pallet_pressed)
             )
-            mImageButtonCurrentPaint!!.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.pallet_normal))
+            mImageButtonCurrentPaint!!.setImageDrawable(
+                ContextCompat.getDrawable(
+                    this,
+                    R.drawable.pallet_normal
+                )
+            )
             mImageButtonCurrentPaint = view
         }
 
+    }
+
+    private fun requestStoragePermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(
+                this,
+                arrayOf(
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ).toString()
+            )
+        ) {
+            Toast.makeText(this, "Need Permission to add a background", Toast.LENGTH_LONG).show()
+        }
+        ActivityCompat.requestPermissions(
+            this, arrayOf(
+                android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ), STORAGE_PERMISSION_CODE
+        )
+
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == STORAGE_PERMISSION_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(
+                    this,
+                    "Permission granted you can read the storage file",
+                    Toast.LENGTH_LONG
+                ).show()
+            } else {
+                Toast.makeText(this, "Oops you denied the permission", Toast.LENGTH_LONG).show()
+
+            }
+        }
+    }
+
+    private fun isReadStorageAllowed(): Boolean {
+        val result = ContextCompat.checkSelfPermission(
+            this,
+            android.Manifest.permission.READ_EXTERNAL_STORAGE
+        )
+        return result == PackageManager.PERMISSION_GRANTED
+    }
+
+    companion object {
+        private const val STORAGE_PERMISSION_CODE = 1
     }
 }
