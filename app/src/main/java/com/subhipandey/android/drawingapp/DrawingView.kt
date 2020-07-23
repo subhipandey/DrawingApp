@@ -25,8 +25,17 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
 
     private var mPaths = ArrayList<CustomPath>()
 
+    private val mUndoPaths = ArrayList<CustomPath>()
+
     init {
         setUpDrawing()
+    }
+
+    fun onClickUndo() {
+        if (mPaths.size > 0) {
+            mUndoPaths.add(mPaths.removeAt(mPaths.size - 1))
+            invalidate()
+        }
     }
 
     private fun setUpDrawing() {
@@ -109,7 +118,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
 
     }
 
-    fun setColor(newColor: String){
+    fun setColor(newColor: String) {
         color = Color.parseColor(newColor)
         mDrawPaint!!.color = color
     }
